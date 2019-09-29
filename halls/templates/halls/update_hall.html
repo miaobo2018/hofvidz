@@ -1,0 +1,13 @@
+{% extends 'halls/base.html' %}
+{% block content %}
+<div class="container">
+	<h2>Edit Hall of Fame</h2>
+	<form method="post">
+		{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+
+    <a href="{% url 'delete_hall' hall.id %}" class="btn btn-danger">Delete this Hall of Fame</a>
+</div>
+{% endblock %}

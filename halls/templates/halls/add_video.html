@@ -4,12 +4,22 @@
 	<h2>Add Video</h2>
 	<form method="post">
 		{% csrf_token %}
-		
-		<table>
-		{{ form.as_table }}
-		</table>
+		{% load widget_tweaks %}
+
+		{% for field in form %}
+		<div class="form-group {% if field.errors %}alert alert-danger{% endif %}">
+			{{ field.errors }}
+			{{ field.label_tag }}
+			{% render_field field class="form-control" %}
+		</div>
+		{% endfor %}
 
         <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+
+    <h2>OR</h2>
+    <form>
+    	{{ search_form.as_table }}
     </form>
 </div>
 {% endblock %}

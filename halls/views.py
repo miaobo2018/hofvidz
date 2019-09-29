@@ -3,8 +3,9 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login
-from .models import Hall
-from .forms import VideoForm
+from .models import Hall, Video
+from .forms import VideoForm, SearchForm
+# from django.forms import formset_factory
 
 
 def home(request):
@@ -14,12 +15,24 @@ def dashboard(request):
     return render(request, 'halls/dashboard.html')
 
 def add_video(request, pk):
+    # VideoFormSet = formset_factory(VideoForm, extra=5)
     form = VideoForm()
+    search_form = SearchForm()
 
     if request.method == 'POST':
         # Create 
+        # filled_form = VideoFormSet(request.POST)
+        if filled_form.is_valid():
+            # for form in filled_form:
+            video = Video()
+            video.title = filled_form.cleaned_data['title']
+            video.url = filled_form.cleaned_data['url']
+            video.youtube_id = filled_form.cleaned_data['youtube_id']
 
-    return render(request, 'halls/add_video.html', {'form':form})
+            video.hall = Hall.objects.get(pk=pk)
+            video.save()
+
+    return render(request, 'halls/add_video.html', {'form':form, 'search_form':search_form})
 
 
 class Signup(generic.CreateView):

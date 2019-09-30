@@ -6,6 +6,12 @@ from django.contrib.auth import authenticate, login
 from .models import Hall, Video
 from .forms import VideoForm, SearchForm
 # from django.forms import formset_factory
+from django.http import Http404
+from django.forms.utils import ErrorList
+import urllib
+import requests
+
+YOUTUBE_API_KEY = 'AIzaSyC5s3jsMeNKXLSicx7e7i_o8vf55D-_m-o'
 
 
 def home(request):
@@ -18,21 +24,36 @@ def add_video(request, pk):
     # VideoFormSet = formset_factory(VideoForm, extra=5)
     form = VideoForm()
     search_form = SearchForm()
+    hall = Hall.objects.get(pk=pk)
+    if not hall.user == request.user:
+        raise Http404
 
     if request.method == 'POST':
         # Create 
-        # filled_form = VideoFormSet(request.POST)
-        if filled_form.is_valid():
+        form = VideoForm(request.POST)
+        if form.is_valid():
             # for form in filled_form:
             video = Video()
-            video.title = filled_form.cleaned_data['title']
-            video.url = filled_form.cleaned_data['url']
-            video.youtube_id = filled_form.cleaned_data['youtube_id']
+            video.url = form.cleaned_data['url']
+            video.hall = hall
 
-            video.hall = Hall.objects.get(pk=pk)
-            video.save()
+            parsed_url = urllib.parse.urlparse(video.url)
+            video_id = urllib.parse.parse_qs(parsed_url.query).get('v')
+            if video_id:
+                video.youtube_id = video_id[0]
 
-    return render(request, 'halls/add_video.html', {'form':form, 'search_form':search_form})
+                response = requests.get(f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={ video_id[0] }&key={YOUTUBE_API_KEY}')
+                json = response.json()
+                title = json['items'][0]['snippet']['title']
+                print(title)
+                video.title = title
+                video.save()
+                return redirect('detail_hall', pk)
+            else:
+                errors = form._errors.setdefault('url', ErrorList())
+                errors.append('Needs to be a YouTube URL')
+
+    return render(request, 'halls/add_video.html', {'form':form, 'search_form':search_form, 'hall':hall})
 
 
 class Signup(generic.CreateView):

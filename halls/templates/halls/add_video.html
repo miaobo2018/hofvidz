@@ -1,7 +1,7 @@
 {% extends 'halls/base.html' %}
 {% block content %}
 <div class="container">
-	<h2>Add Video</h2>
+	<h2>Add Video to {{ hall.title }}</h2>
 	<form method="post">
 		{% csrf_token %}
 		{% load widget_tweaks %}
@@ -14,12 +14,44 @@
 		</div>
 		{% endfor %}
 
-        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-primary">Add</button>
     </form>
+
+    <br>
 
     <h2>OR</h2>
     <form>
-    	{{ search_form.as_table }}
+    	{% for field in search_form %}
+		<div class="form-group">
+			{{ field.errors }}
+			{{ field.label_tag }}
+			{% render_field field class="form-control" %}
+		</div>
+		{% endfor %}
     </form>
+
+<div id="search_results">
+	<script type="text/javascript">
+		var delayTimer;
+		$('#id_search_term').keyup(function() {
+			clearTimeout(delayTimer);
+			$('#search_results').text('Loading...');
+			delayTimer = setTimeout(function() {
+				var text = $('#id_search_term').val();
+				$.ajax({
+					url: '/video/search',
+					data: {
+						'search_term': text
+					},
+					dataType: 'json',
+					success: function(data) {
+						$('#search_results').text(data['Hello']);
+					}
+				});
+			}, 1000);
+		});
+	</script>
+</div>
+
 </div>
 {% endblock %}

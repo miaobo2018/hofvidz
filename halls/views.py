@@ -77,6 +77,10 @@ class Signup(generic.CreateView):
         login(self.request, user)
         return view
 
+class DeleteVideo(generic.DeleteView):
+    model = Video
+    template_name = 'halls/delete_video.html'
+    success_url = reverse_lazy('dashboard')
 
 class CreateHall(generic.CreateView):
     model = Hall
